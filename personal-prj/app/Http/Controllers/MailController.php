@@ -28,11 +28,16 @@ class MailController extends Controller
         }
 
         array_shift($allEmails);
-        $allEmails = array_filter($allEmails);
+
+        $checkEmail = collect($allEmails)->filter(function ($email){
+            return str_ends_with($email,'@gmail.com');
+        });
+
+//        $allEmails = array_filter($allEmails);
 
         $chunkSize = 10; // Số lượng phần tử trong mỗi phần
 
-        collect($allEmails)->chunk($chunkSize)->each(function ($chunk) {
+        collect($checkEmail)->chunk($chunkSize)->each(function ($chunk) {
             $chunk->each(function ($mail){
             $mailData = [
                 'title' => 'Mail from kudoNghia',
@@ -43,7 +48,7 @@ class MailController extends Controller
             if(env('MAIL_HOST', false) === 'sandbox.smtp.mailtrap.io'){
                 usleep(500000); //use usleep(500000) for half a second or less
             }
-        });
+            });
         });
 
         $end = hrtime(true);

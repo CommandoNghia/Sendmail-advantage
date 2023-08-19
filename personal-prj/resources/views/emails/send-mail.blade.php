@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>ItsolutionStuff.com</title>
+    <title>kudoNghia.com</title>
 </head>
 <body>
 <h1>{{ $mailData['title'] }}</h1>
