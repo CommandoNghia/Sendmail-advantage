@@ -3,51 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Mail\SendMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 class MailController extends Controller
 {
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function index(): \Illuminate\Http\RedirectResponse
     {
         $start = hrtime(true);
 
+        $path = database_path('data\users.json');
+
+//        $fileJson = file_get_contents($path);
+//        $result = json_decode($fileJson, true);
+
+
         // Thực hiện các tác vụ cần đo thời gian
-        $path = database_path('data\group_member.csv'); // Đường dẫn đến tệp Csv
 
-        $columnIndex = 1; // Chỉ số cột bạn muốn lấy dữ liệu từ (chỉ số bắt đầu từ 1)
-        $allEmails = [];
+        $chunkSize = 200; // Số lượng phần tử trong mỗi phần
 
-        if (($handle = fopen($path, "r")) !== false) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                if (isset($data[$columnIndex - 1])) {
-                    $allEmails[] = $data[$columnIndex - 0];
-                }
-            }
-            fclose($handle);
-        }
+        $users = User::all();
+        $userEmails = $users->pluck('email');
 
-        array_shift($allEmails);
-
-        $checkEmail = collect($allEmails)->filter(function ($email){
-            return str_ends_with($email,'@gmail.com');
+        $checkEmails = collect($userEmails)->filter(function ($email) {
+            return $email;
         });
 
-//        $allEmails = array_filter($allEmails);
+        $checkEmails->chunk($chunkSize)->each(function ($chunk) {
+            $chunk->each(function ($mail) {
+                $mailData = [
+                    'title' => 'Mail from kudoNghia',
+                    'body' => 'This is for testing email using smtp.'
+                ];
 
-        $chunkSize = 10; // Số lượng phần tử trong mỗi phần
-
-        collect($checkEmail)->chunk($chunkSize)->each(function ($chunk) {
-            $chunk->each(function ($mail){
-            $mailData = [
-                'title' => 'Mail from kudoNghia',
-                'body' => 'This is for testing email using smtp.'
-            ];
-
-            Mail::to($mail)->send(new SendMail($mailData));
-            if(env('MAIL_HOST', false) === 'sandbox.smtp.mailtrap.io'){
-                usleep(500000); //use usleep(500000) for half a second or less
-            }
+                Mail::to($mail)->send(new SendMail($mailData));
             });
         });
 
@@ -60,10 +53,16 @@ class MailController extends Controller
             Thời gian gửi email: ' . $executionTime . ' giây');
     }
 
+    /**
+     * Display the email sending page.
+     *
+     * If a flash message is present in the session, pass it to the 'emails.call-back' view.
+     * Otherwise, return the 'emails.call-back' view without any attached message.
+     *
+     * @return \Illuminate\View\View
+     */
     public function sendMail()
     {
-
-
         if (session()->has('flash_message')) {
             $flashMessage = session('flash_message');
             return view('emails.call-back')->with('flash_message', $flashMessage);

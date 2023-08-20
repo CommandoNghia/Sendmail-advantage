@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ExcelController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
@@ -27,8 +28,8 @@ use Illuminate\Support\Facades\Route;
  * Mail Routes
  */
 Route::controller(MailController::class)->group(function () {
-    Route::get('/send-mail',  'index');
-    Route::get('/call-back','sendMail')->name('send_mail');
+    Route::post('/send-mail', 'index');
+    Route::get('/call-back', 'sendMail')->name('send_mail');
 });
 
 Route::get('/export-emails', [ExcelController::class, 'exportEmails']);
@@ -36,6 +37,7 @@ Route::get('/export-emails', [ExcelController::class, 'exportEmails']);
 /**
  * Home Routes
  */
+
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
 
 /**
@@ -44,32 +46,36 @@ Route::get('/', [HomeController::class, 'index'])->name('home.index');
 Route::middleware([
     'guest',
 ])->group(function () {
-        /**
-         * Register Routes
-         */
-        Route::controller(RegisterController::class)->group(function () {
-            Route::get('/register',  'show')->name('register.show');
-            Route::post('/register',  'register')->name('register.perform');
-        });
+    /**
+     * Register Routes
+     */
+    Route::controller(RegisterController::class)->group(function () {
+        Route::get('/register', 'show')->name('register.show');
+        Route::post('/register', 'register')->name('register.perform');
+    });
 
-        /**
-         * Login Routes
-         */
-        Route::controller(LoginController::class)->group(function () {
-            Route::get('/login',  'show')->name('login.show');
-            Route::post('/login',  'login')->name('login.perform');
-        });
+
+    Route::post('/files', [FileController::class, 'storeImage'])->name('file.storeImage');
+
+
+    /**
+     * Login Routes
+     */
+    Route::controller(LoginController::class)->group(function () {
+        Route::get('/login', 'show')->name('login.show');
+        Route::post('/login', 'login')->name('login.perform');
+    });
 });
 
 Route::middleware([
     'auth'
-])->group(function (){
+])->group(function () {
     /**
      * Logout Routes
      */
-        Route::controller(LogoutController::class)->group(function (){
-            Route::get('/logout', 'perform')->name('logout.perform');
-        });
+    Route::controller(LogoutController::class)->group(function () {
+        Route::get('/logout', 'perform')->name('logout.perform');
+    });
 });
 
 

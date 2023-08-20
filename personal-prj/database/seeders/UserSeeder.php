@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Jobs\CreateUserJob;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UserSeeder extends Seeder
 {
+    const chunkSize = 200;
+
     /**
      * Run the database seeds.
      *
@@ -15,6 +17,21 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        User::factory(10)->create();
+        // Tắt ghi log truy vấn cơ sở dữ liệu
+        DB::disableQueryLog();
+
+        $totalUsers = 100000;
+        $numChunks = ceil($totalUsers / UserSeeder::chunkSize);
+
+        // Bắt đầu giao dịch cơ sở dữ liệu
+//        DB::beginTransaction();
+
+        for ($i = 0; $i < $numChunks; $i++) {
+            dispatch(new CreateUserJob());
+        }
+
+        // Kết thúc giao dịch cơ sở dữ liệu
+//        DB::commit();
     }
 }
+
