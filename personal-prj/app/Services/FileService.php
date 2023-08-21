@@ -18,6 +18,6 @@ class FileService
         $filePath = 'images';
         $path = Storage::cloud()->put($filePath, $file);
         $url = Storage::cloud()->url($path);
-        return  ['url' => $url];
+        return  ['key' => $url];
     }
 }

@@ -41,7 +41,7 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
-    public function register(): void
+    public function register()
     {
         $this->reportable(function (Throwable $e) {
             if ($this->shouldReport($e) && app()->bound('sentry')) {
@@ -67,14 +67,26 @@ class Handler extends ExceptionHandler
             Log::debug($e);
         }
 
-        return match (true) {
-            $e instanceof HttpException => $this->httpException($e),
-            $e instanceof CustomValidationException => $this->validationException($e),
-            $e instanceof AuthorizationException => $this->errorException($e, Response::HTTP_FORBIDDEN),
-            $e instanceof CustomException => $this->errorException($e, $e->getCode()),
-            $e instanceof ModelNotFoundException => $this->errorException($e, Response::HTTP_NOT_FOUND),
-            default => $this->errorException($e),
-        };
+        switch (true) {
+            case $e instanceof HttpException:
+                $result = $this->httpException($e);
+                break;
+            case $e instanceof CustomValidationException:
+                $result = $this->validationException($e);
+                break;
+            case $e instanceof AuthorizationException:
+                $result = $this->errorException($e, Response::HTTP_FORBIDDEN);
+                break;
+            case $e instanceof CustomException:
+                $result = $this->errorException($e, $e->getCode());
+                break;
+            case $e instanceof ModelNotFoundException:
+                $result = $this->errorException($e, Response::HTTP_NOT_FOUND);
+                break;
+            default:
+                $result = $this->errorException($e);
+        }
 
+        return $result;
     }
 }

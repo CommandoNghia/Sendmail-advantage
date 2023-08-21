@@ -7,6 +7,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\RegisterController;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,9 +55,7 @@ Route::middleware([
         Route::post('/register', 'register')->name('register.perform');
     });
 
-
-    Route::post('/files', [FileController::class, 'storeImage'])->name('file.storeImage');
-
+    Route::post('/files', [FileController::class, 'upload'])->name('file.upload');
 
     /**
      * Login Routes
@@ -77,5 +76,6 @@ Route::middleware([
         Route::get('/logout', 'perform')->name('logout.perform');
     });
 });
+
 
 
